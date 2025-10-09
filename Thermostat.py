@@ -13,3 +13,7 @@ class Thermostat:
     def temp_down(self):
         self.temperature -= 1
         print(f"Temperature down: {self.temperature}")
+
+    def toggle_mode(self):
+        self.mode = (self.mode + 1) % 3
+        print(f"Mode set: {self.modes[self.mode]}")
