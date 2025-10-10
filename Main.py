@@ -5,6 +5,7 @@ import machine
 import Stepper
 import Buttons
 import LCD
+import DHT
 from Thermostat import Thermostat
 
 # Heat/Cool Toggle
@@ -16,6 +17,7 @@ dn_button = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP)
 
 if __name__ == "__main__":
     print("Running!")
+
     Buttons.init_mode_toggle_button(toggle_button)
     Buttons.init_temp_up_button(up_button)
     Buttons.init_temp_dn_button(dn_button)
@@ -23,6 +25,8 @@ if __name__ == "__main__":
     LCD.init_lcd()
     LCD.clear()
     LCD.set_cursor(0,0)
+
+    DHT.init_sensor(0)
 
     myThermostat = Thermostat()
     Buttons.set_thermostat(myThermostat)
@@ -32,7 +36,7 @@ if __name__ == "__main__":
 
     while True:
         LCD.home()
-        LCD.write_string(f"Temp: 0 C")
+        LCD.write_string(f"Temp: {0} C")
         
         LCD.set_cursor(1,0)
         LCD.write_string(f"Set:  {myThermostat.temperature} C")
