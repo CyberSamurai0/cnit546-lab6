@@ -4,6 +4,7 @@ import machine
 # Import Custom Libraries
 import Stepper
 import Buttons
+import LCD
 from Thermostat import Thermostat
 
 # Heat/Cool Toggle
@@ -19,6 +20,9 @@ if __name__ == "__main__":
     Buttons.init_temp_up_button(up_button)
     Buttons.init_temp_dn_button(dn_button)
 
+    LCD.init_lcd()
+    LCD.clear()
+    LCD.set_cursor(0,0)
 
     myThermostat = Thermostat()
     Buttons.set_thermostat(myThermostat)
@@ -27,5 +31,15 @@ if __name__ == "__main__":
     motor = Stepper.StepperMotor(33, 32, 26, 25)
 
     while True:
+        LCD.home()
+        LCD.write_string(f"Temp: 0 C")
+        
+        LCD.set_cursor(1,0)
+        LCD.write_string(f"Set:  {myThermostat.temperature} C")
+
+        LCD.set_cursor(3,0)
+        LCD.write_string(f"Mode: {myThermostat.modes[myThermostat.mode]} ")
+
+        machine.sleep(100)
         #print((str(toggle_button.value()), str(up_button.value()), str(dn_button.value())))
         continue
