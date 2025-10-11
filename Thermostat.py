@@ -2,18 +2,25 @@ class Thermostat:
     # Define Mode Strings
     modes = ["OFF", "HEAT", "COOL"]
 
-    def __init__(self, temperature=72, mode=0):
+    def __init__(self, temperature=22, mode=0, screen=None):
         self.temperature = temperature
         self.mode = mode
+        self.screen = screen
 
     def temp_up(self):
         self.temperature += 1
+        if self.screen:
+            self.screen.set_line(1, f"Set:  {self.temperature} C")
         print(f"Temperature up: {self.temperature}")
 
     def temp_down(self):
         self.temperature -= 1
+        if self.screen:
+            self.screen.set_line(1, f"Set:  {self.temperature} C")
         print(f"Temperature down: {self.temperature}")
 
     def toggle_mode(self):
         self.mode = (self.mode + 1) % 3
+        if self.screen:
+            self.screen.set_line(3, f"Mode: {self.modes[self.mode]} ")
         print(f"Mode set: {self.modes[self.mode]}")
