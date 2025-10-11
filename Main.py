@@ -22,28 +22,28 @@ if __name__ == "__main__":
     Buttons.init_temp_up_button(up_button)
     Buttons.init_temp_dn_button(dn_button)
 
-    LCD.init_lcd()
-    LCD.clear()
-    LCD.set_cursor(0,0)
+    screen = LCD.LCD()
 
-    DHT.init_sensor(0)
+    # Define callback for DHT periodic readings
+    def sensorOnRead(temperature, _):
+        if temperature != -1:
+            screen.set_line(0, f"Temp: {temperature} C")
+        else:
+            screen.set_line(0, "Temp: -- C")
 
-    myThermostat = Thermostat()
+    sensor = DHT.Sensor(0)
+    sensor.start_periodic_read(2000, sensorOnRead)
+
+    myThermostat = Thermostat(22, 0, screen)
     Buttons.set_thermostat(myThermostat)
+
+    # Initial Display
+    screen.set_line(0, f"Temp: -- C")
+    screen.set_line(1, f"Set:  {myThermostat.temperature} C")
+    screen.set_line(3, f"Mode: {myThermostat.modes[myThermostat.mode]} ")
 
     # Define GPIO pins for stepper motor
     motor = Stepper.StepperMotor(33, 32, 26, 25)
 
     while True:
-        LCD.home()
-        LCD.write_string(f"Temp: {0} C")
-        
-        LCD.set_cursor(1,0)
-        LCD.write_string(f"Set:  {myThermostat.temperature} C")
-
-        LCD.set_cursor(3,0)
-        LCD.write_string(f"Mode: {myThermostat.modes[myThermostat.mode]} ")
-
-        machine.sleep(100)
-        #print((str(toggle_button.value()), str(up_button.value()), str(dn_button.value())))
         continue
