@@ -22,5 +22,7 @@ class Thermostat:
     def toggle_mode(self):
         self.mode = (self.mode + 1) % 3
         if self.screen:
-            self.screen.set_line(3, f"Mode: {self.modes[self.mode]} ")
+            self.screen.set_cursor(0, 16) # Write to end of line
+            self.screen.write_string((self.modes[self.mode] + "    ")[:4]) # Ensure always 4 chars
+            #self.screen.set_line(3, f"Mode: {self.modes[self.mode]} ")
         print(f"Mode set: {self.modes[self.mode]}")

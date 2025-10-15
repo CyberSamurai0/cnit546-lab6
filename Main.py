@@ -18,9 +18,6 @@ toggle_button = machine.Pin(27, machine.Pin.IN, machine.Pin.PULL_UP)
 up_button = machine.Pin(12, machine.Pin.IN, machine.Pin.PULL_UP)
 dn_button = machine.Pin(14, machine.Pin.IN, machine.Pin.PULL_UP)
 
-def rpc_callback(topic, msg):
-    print("Received message:", msg)
-
 if __name__ == "__main__":
     print("Running!")
 
@@ -33,9 +30,11 @@ if __name__ == "__main__":
     # Define callback for DHT periodic readings
     def sensorOnRead(temperature, _):
         if temperature != -1:
-            screen.set_line(0, f"Temp: {temperature} C")
+            screen.set_cursor(0, 0)
+            screen.write_string(f"Temp: {temperature} C")
         else:
-            screen.set_line(0, "Temp: -- C")
+            screen.set_cursor(0, 0)
+            screen.write_string("Temp: -- C")
 
     sensor = DHT.Sensor(0)
     sensor.start_periodic_read(2000, sensorOnRead)
@@ -44,12 +43,27 @@ if __name__ == "__main__":
     Buttons.set_thermostat(myThermostat)
 
     # Initial Display
-    screen.set_line(0, f"Temp: -- C")
+    screen.set_cursor(0, 0)
+    screen.write_string(f"Temp: -- C")
+    screen.set_cursor(0, 16) # Write to end of line
+    screen.write_string(f"{myThermostat.modes[myThermostat.mode]}")
     screen.set_line(1, f"Set:  {myThermostat.temperature} C")
-    screen.set_line(3, f"Mode: {myThermostat.modes[myThermostat.mode]} ")
+    #screen.set_line(3, f"Mode: {myThermostat.modes[myThermostat.mode]} ")
+    screen.set_line(3, f"Out:  -- C")
 
     # Define GPIO pins for stepper motor
     motor = Stepper.StepperMotor(33, 32, 26, 25)
+
+    def rpc_callback(_, msg):
+        print("Received message:", msg)
+        try:
+            data = ujson.loads(msg)
+            if data["method"] == "setOutside":
+                outside = data["params"]
+                if isinstance(outside, (int, float)):
+                    screen.set_line(3, f"Out:  {int(outside)} C")
+        except Exception as e:
+            print("Error processing message:", e)
 
     # Connect to Wi-Fi
     wlan = Network.connect_to_wifi("Phone Hotspot", "password")
