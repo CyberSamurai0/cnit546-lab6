@@ -23,7 +23,7 @@ def init_temp_dn_button(pin):
 # Create Handler Functions for Interrupts
 def mode_toggle_handler(_):
     if _thermostat is not None:
-        _thermostat.toggle_mode()
+        _thermostat.set_mode(_thermostat.mode + 1)
     else:
         print("Thermostat instance not set!")
 

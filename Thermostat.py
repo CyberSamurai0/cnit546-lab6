@@ -7,6 +7,12 @@ class Thermostat:
         self.mode = mode
         self.screen = screen
 
+    def set_temperature(self, temperature):
+        self.temperature = temperature
+        if self.screen:
+            self.screen.set_line(1, f"Set:  {self.temperature} C")
+        print(f"Temperature set: {self.temperature}")
+
     def temp_up(self):
         self.temperature += 1
         if self.screen:
@@ -19,8 +25,8 @@ class Thermostat:
             self.screen.set_line(1, f"Set:  {self.temperature} C")
         print(f"Temperature down: {self.temperature}")
 
-    def toggle_mode(self):
-        self.mode = (self.mode + 1) % 3
+    def set_mode(self, mode):
+        self.mode = mode % 3
         if self.screen:
             self.screen.set_cursor(0, 16) # Write to end of line
             self.screen.write_string((self.modes[self.mode] + "    ")[:4]) # Ensure always 4 chars

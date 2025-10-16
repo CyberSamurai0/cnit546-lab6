@@ -1,4 +1,5 @@
 import network
+import machine
 from umqtt.simple import MQTTClient
 
 def connect_to_wifi(ssid, password):
@@ -26,7 +27,16 @@ def init_MQTT(server, user, password, callback, port=1883):
     print('Connected to MQTT broker')
     client.subscribe(b"v1/devices/me/rpc/request/+")
     print("Subscribed to RPC topic")
-    return client
+
+    def _read(t):
+        client.check_msg()
+
+
+    MQTT_Timer = machine.Timer(1)
+    MQTT_Timer.init(period=50, mode=machine.Timer.PERIODIC, callback=_read)
+
+    return (client, MQTT_Timer)
+
 
 def publish_message(client, topic, message):
     client.publish(topic, message)

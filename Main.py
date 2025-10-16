@@ -54,7 +54,7 @@ if __name__ == "__main__":
     # Define GPIO pins for stepper motor
     motor = Stepper.StepperMotor(33, 32, 26, 25)
 
-    def rpc_callback(_, msg):
+    def rpc_callback(topic, msg):
         print("Received message:", msg)
         try:
             data = ujson.loads(msg)
@@ -62,6 +62,26 @@ if __name__ == "__main__":
                 outside = data["params"]
                 if isinstance(outside, (int, float)):
                     screen.set_line(3, f"Out:  {int(outside)} C")
+            elif data["method"] == "setPower":  
+                power = data["params"]
+                if (power == False):
+                    myThermostat.set_mode(0) # Set to OFF
+                else:
+                    myThermostat.set_mode(1) # Set to HEAT
+            elif data["method"] == "setMode":
+                mode = data["params"]
+                if mode in [0, 1, 2]:
+                    myThermostat.set_mode(mode)
+            elif data["method"] == "setTemp":
+                temp = data["params"]
+                if isinstance(temp, int) and (16 <= temp <= 30):
+                    myThermostat.set_temperature(temp)
+            elif data["method"] == "setFan":
+                fanOn = data["params"]
+                if fanOn:
+                    motor.start_rotation(5) # Rotate indefinitely
+                else:
+                    motor.stop_rotation()
         except Exception as e:
             print("Error processing message:", e)
 
@@ -80,5 +100,4 @@ if __name__ == "__main__":
             "mode": myThermostat.mode
         }
         Network.publish_message(mqtt_client, "v1/devices/me/telemetry", ujson.dumps(telemetry))
-        mqtt_client.check_msg()
         time.sleep(10)
