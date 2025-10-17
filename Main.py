@@ -54,6 +54,12 @@ if __name__ == "__main__":
     # Define GPIO pins for stepper motor
     motor = Stepper.StepperMotor(33, 32, 26, 25)
 
+    heater = machine.Pin(5, machine.Pin.OUT)
+    heater.value(1)
+
+    ac = machine.Pin(7, machine.Pin.OUT)
+    ac.value(1)
+
     def rpc_callback(topic, msg):
         print("Received message:", msg)
         try:
@@ -61,6 +67,7 @@ if __name__ == "__main__":
             if data["method"] == "setOutside":
                 outside = data["params"]
                 if isinstance(outside, (int, float)):
+                    myThermostat.outside = outside
                     screen.set_line(3, f"Out:  {int(outside)} C")
             elif data["method"] == "setPower":  
                 power = data["params"]
@@ -76,12 +83,22 @@ if __name__ == "__main__":
                 temp = data["params"]
                 if isinstance(temp, int) and (16 <= temp <= 30):
                     myThermostat.set_temperature(temp)
-            elif data["method"] == "setFan":
-                fanOn = data["params"]
-                if fanOn:
-                    motor.start_rotation(5) # Rotate indefinitely
+            elif data["method"] == "setHeater":
+                heaterOn = data["params"]
+                if heaterOn:
+                    heater.value(0)
+                    #motor.start_rotation(5) # Rotate indefinitely
                 else:
-                    motor.stop_rotation()
+                    heater.value(1)
+                    #motor.stop_rotation()
+            elif data["method"] == "setAC":
+                acOn = data["params"]
+                if acOn:
+                    ac.value(0)
+                    #motor.start_rotation(5) # Rotate indefinitely
+                else:
+                    ac.value(1)
+                    #motor.stop_rotation()
         except Exception as e:
             print("Error processing message:", e)
 
@@ -99,5 +116,15 @@ if __name__ == "__main__":
             "setpoint": myThermostat.temperature,
             "mode": myThermostat.mode
         }
+
+        # Emulate screen to console once per iteration
+        print("\n\n\n")
+
+        print(f"Temp: {sensor.temperature} C          {myThermostat.modes[myThermostat.mode]}")
+        print(f"Set:  {myThermostat.temperature} C")
+        print("")
+        print(f"Out:  {int(myThermostat.outside) if hasattr(myThermostat, 'outside') else '--'} C")
+        print("\n")
+
         Network.publish_message(mqtt_client, "v1/devices/me/telemetry", ujson.dumps(telemetry))
         time.sleep(10)
