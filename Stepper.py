@@ -69,22 +69,35 @@ class StepperMotor:
             self.set_step(self._current_step)
             self._current_step += 1
             self._steps_remaining -= 1
+        elif self._steps_remaining == -1:
+            # Rotate until stopped
+            self.set_step(self._current_step)
+            self._current_step += 1
+
+            # Roll over to reduce memory usage
+            if self._current_step >= 256:
+                self._current_step = 0
         else:
             self.stop_rotation()
 
     # Start rotation for a given number of revolutions (non-blocking)
     def start_rotation(self, revolutions):
-        steps_per_revolution = 512  # Assuming 512 steps per revolution
-        total_steps = int(revolutions * steps_per_revolution)
-        self._steps_remaining = total_steps
-        self._current_step = 0
+        if revolutions == -1:
+            # Rotate indefinitely
+            self._steps_remaining = -1
+            self._current_step = 0
+        else:
+            steps_per_revolution = 512  # Assuming 512 steps per revolution
+            total_steps = int(revolutions * steps_per_revolution)
+            self._steps_remaining = total_steps
+            self._current_step = 0
 
         # Cleanup any existing timer
         if self._timer:
             self._timer.deinit()
         
         # Initialize and start the timer for non-blocking rotation
-        self._timer = Timer(-1)
+        self._timer = Timer(2)
         self._timer.init(period=self.delay, mode=Timer.PERIODIC, callback=self._timer_callback)
 
     # Stop the motor rotation
